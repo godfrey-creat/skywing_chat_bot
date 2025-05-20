@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flight Booking Dashboard with Chatbot</title>
+    <title>Flight Booking Chatbot</title>
     <style>
         * {
             margin: 0;
@@ -16,38 +16,6 @@
             background: linear-gradient(135deg, #87CEEB 0%, #ffffff 100%);
             min-height: 100vh;
             position: relative;
-        }
-
-        .dashboard {
-            padding: 20px;
-            min-height: 100vh;
-        }
-
-        .dashboard-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .dashboard-header h1 {
-            color: #2c3e50;
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-
-        .dashboard-content {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .dashboard-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            border: 2px solid #87CEEB;
         }
 
         /* Chatbot Toggle Button */
@@ -290,36 +258,6 @@
     </style>
 </head>
 <body>
-    <!-- Main Dashboard -->
-    <div class="dashboard">
-        <div class="dashboard-header">
-            <h1>✈️ Flight Booking Dashboard</h1>
-            <p>Welcome to your travel companion</p>
-        </div>
-        
-        <div class="dashboard-content">
-            <div class="dashboard-card">
-                <h3>Recent Bookings</h3>
-                <p>Your recent flight bookings will appear here.</p>
-            </div>
-            
-            <div class="dashboard-card">
-                <h3>Flight Status</h3>
-                <p>Check real-time flight status updates.</p>
-            </div>
-            
-            <div class="dashboard-card">
-                <h3>Travel History</h3>
-                <p>View your complete travel history and preferences.</p>
-            </div>
-            
-            <div class="dashboard-card">
-                <h3>Offers & Deals</h3>
-                <p>Discover exclusive flight deals and offers.</p>
-            </div>
-        </div>
-    </div>
-
     <!-- Chatbot Toggle Button -->
     <div class="chatbot-toggle" id="chatbotToggle">
         <div class="airplane-icon">✈️</div>
