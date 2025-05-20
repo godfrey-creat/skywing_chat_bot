@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Booking Chatbot</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #87CEEB 0%, #ffffff 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Chatbot Toggle Button */
+        .chatbot-toggle {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #87CEEB, #5dade2);
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(135, 206, 235, 0.4);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            border: 3px solid white;
+        }
+
+        .chatbot-toggle:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(135, 206, 235, 0.6);
+        }
+
+        .airplane-icon {
+            font-size: 24px;
+            color: white;
+            transform: rotate(-45deg);
+        }
+
+        /* Chatbot Container */
+        .chatbot-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 380px;
+            height: 500px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: 3px solid #87CEEB;
+            display: none;
+            flex-direction: column;
+            z-index: 1001;
+            overflow: hidden;
+        }
+
+        .chatbot-container.active {
+            display: flex;
+        }
+
+        /* Chatbot Header */
+        .chatbot-header {
+            background: linear-gradient(135deg, #87CEEB, #5dade2);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chatbot-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Chat Messages */
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .bot-message {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 18px 18px 18px 6px;
+            border-left: 4px solid #87CEEB;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .user-message {
+            background: #87CEEB;
+            color: white;
+            padding: 12px 15px;
+            border-radius: 18px 18px 6px 18px;
+            margin-left: auto;
+            max-width: 80%;
+            text-align: right;
+        }
+
+        /* Input Area */
+        .chat-input-container {
+            padding: 15px 20px;
+            background: white;
+            border-top: 2px solid #e9ecef;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #87CEEB;
+            border-radius: 25px;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .chat-input:focus {
+            border-color: #5dade2;
+            box-shadow: 0 0 8px rgba(135, 206, 235, 0.3);
+        }
+
+        /* Option Buttons */
+        .option-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .option-btn {
+            background: #f8f9fa;
+            border: 2px solid #87CEEB;
+            border-radius: 20px;
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+            color: #2c3e50;
+        }
+
+        .option-btn:hover {
+            background: #87CEEB;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Airline Options */
+        .airline-option {
+            background: #f8f9fa;
+            border: 2px solid #87CEEB;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 5px 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .airline-option:hover {
+            background: #87CEEB;
+            color: white;
+            transform: translateX(5px);
+        }
+
+        /* Notification */
+        .notification {
+            background: linear-gradient(135deg, #87CEEB, #5dade2);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .notification h4 {
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .notification p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Scrollbar Styling */
+        .chat-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: #87CEEB;
+            border-radius: 3px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb:hover {
+            background: #5dade2;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .chatbot-container {
+                width: calc(100vw - 20px);
+                height: calc(100vh - 40px);
+                right: 10px;
+                bottom: 10px;
+            }
+            
+            .chatbot-toggle {
+                right: 20px;
+                bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Chatbot Toggle Button -->
+    <div class="chatbot-toggle" id="chatbotToggle">
+        <div class="airplane-icon">✈️</div>
+    </div>
+
+    <!-- Chatbot Container -->
+    <div class="chatbot-container" id="chatbotContainer">
+        <div class="chatbot-header">
+            <div class="chatbot-title">✈️ Flight Assistant</div>
+            <button class="close-btn" id="closeChatbot">×</button>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <!-- Messages will be dynamically added here -->
+        </div>
+        
+        <div class="chat-input-container">
+            <input 
+                type="text" 
+                class="chat-input" 
+                id="chatInput" 
+                placeholder="Type your message..."
+                disabled
+            >
+        </div>
+    </div>
+
+    <script>
+        class FlightChatbot {
+            constructor() {
+                this.currentStep = 0;
+                this.userInputs = {
+                    origin: '',
+                    destination: '',
+                    departure_date: '',
+                    travel_class: '',
+                    traveller_type: ''
+                };
+                
+                this.questions = [
+                    'What is your origin? (Select continent)',
+                    'What is your destination? (Select continent)',
+                    'What is your departure date? (Please use DD/MM/YYYY format)',
+                    'What is your travel class?',
+                    'What is your traveller type?'
+                ];
+
+                this.continents = [
+                    'Africa', 'Antarctica', 'Asia', 'Australia/Oceania', 
+                    'Europe', 'North America', 'South America'
+                ];
+
+                this.travel_class_options = [
+                    'Economy Class', 'Premium Economy', 'Business Class', 'First Class'
+                ];
+
+                this.traveller_type_options = [
+                    'Solo Leisure', 'Family Leisure', 'Business', 'Couple Leisure'
+                ];
+
+                this.airlines = [
+                    { name: 'SkyBlue Airlines', price: '$299', duration: '2h 30m', departure: '08:00' },
+                    { name: 'CloudWings Express', price: '$349', duration: '2h 45m', departure: '10:30' },
+                    { name: 'AeroFly International', price: '$279', duration: '3h 15m', departure: '14:20' },
+                    { name: 'JetStream Airways', price: '$389', duration: '2h 20m', departure: '16:45' },
+                    { name: 'WindRider Airlines', price: '$319', duration: '2h 55m', departure: '19:10' }
+                ];
+
+                this.init();
+            }
+
+            init() {
+                const toggle = document.getElementById('chatbotToggle');
+                const container = document.getElementById('chatbotContainer');
+                const closeBtn = document.getElementById('closeChatbot');
+                const input = document.getElementById('chatInput');
+
+                toggle.addEventListener('click', () => this.openChatbot());
+                closeBtn.addEventListener('click', () => this.closeChatbot());
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.handleUserInput();
+                });
+            }
+
+            openChatbot() {
+                const container = document.getElementById('chatbotContainer');
+                const input = document.getElementById('chatInput');
+                
+                container.classList.add('active');
+                
+                if (this.currentStep === 0) {
+                    this.addBotMessage('Hello! I\'m your flight booking assistant. Let me help you find the perfect flight across continents. ✈️');
+                    setTimeout(() => {
+                        this.askNextQuestion();
+                    }, 1000);
+                }
+                
+                input.disabled = false;
+                input.focus();
+            }
+
+            closeChatbot() {
+                const container = document.getElementById('chatbotContainer');
+                container.classList.remove('active');
+            }
+
+            addBotMessage(message) {
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message bot-message';
+                messageDiv.textContent = message;
+                messagesContainer.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            addBotMessageWithOptions(message, options, parameterName) {
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message bot-message';
+                
+                let optionsHTML = `<div style="margin-bottom: 10px;">${message}</div>`;
+                optionsHTML += '<div class="option-buttons">';
+                
+                options.forEach((option) => {
+                    optionsHTML += `
+                        <div class="option-btn" onclick="chatbot.selectOption('${option}', '${parameterName}')">
+                            ${option}
+                        </div>
+                    `;
+                });
+                
+                optionsHTML += '</div>';
+                messageDiv.innerHTML = optionsHTML;
+                messagesContainer.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            addUserMessage(message) {
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message user-message';
+                messageDiv.textContent = message;
+                messagesContainer.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            selectOption(option, parameterName) {
+                // Store the selection
+                this.userInputs[parameterName] = option;
+                
+                // Add user message
+                this.addUserMessage(option);
+                
+                // Move to next step
+                this.currentStep++;
+                
+                setTimeout(() => {
+                    this.askNextQuestion();
+                }, 500);
+            }
+
+            addAirlineOptions() {
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message bot-message';
+                
+                let optionsHTML = '<div style="margin-bottom: 10px;">Here are the available airline recommendations:</div>';
+                
+                this.airlines.forEach((airline, index) => {
+                    optionsHTML += `
+                        <div class="airline-option" onclick="chatbot.selectAirline(${index})">
+                            <strong>${airline.name}</strong><br>
+                            Price: ${airline.price} | Duration: ${airline.duration}<br>
+                            Departure: ${airline.departure}
+                        </div>
+                    `;
+                });
+                
+                messageDiv.innerHTML = optionsHTML;
+                messagesContainer.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            selectAirline(index) {
+                const selectedAirline = this.airlines[index];
+                this.addUserMessage(`Selected: ${selectedAirline.name}`);
+                
+                setTimeout(() => {
+                    this.showFlightConfirmation(selectedAirline);
+                }, 500);
+            }
+
+            showFlightConfirmation(airline) {
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message bot-message';
+                
+                const confirmationHTML = `
+                    <div class="notification">
+                        <h4>🎉 Flight Booking Confirmation</h4>
+                        <p><strong>Airline:</strong> ${airline.name}</p>
+                        <p><strong>Route:</strong> ${this.userInputs.origin} → ${this.userInputs.destination}</p>
+                        <p><strong>departure_date:</strong> ${this.userInputs.departure_date}</p>
+                        <p><strong>travel_class:</strong> ${this.userInputs.travel_class}</p>
+                        <p><strong>traveller_type:</strong> ${this.userInputs.traveller_type}</p>
+                        <p><strong>Price:</strong> ${airline.price}</p>
+                        <p><strong>Duration:</strong> ${airline.duration}</p>
+                        <p><strong>Departure:</strong> ${airline.departure}</p>
+                    </div>
+                `;
+                
+                messageDiv.innerHTML = confirmationHTML;
+                messagesContainer.appendChild(messageDiv);
+                this.scrollToBottom();
+
+                setTimeout(() => {
+                    this.addBotMessage('Thank you for booking with us! Have a wonderful flight! ✈️');
+                    this.addBotMessage('You can close this chat or start a new booking by refreshing.');
+                }, 1000);
+            }
+
+            askNextQuestion() {
+                if (this.currentStep < this.questions.length) {
+                    const currentQuestion = this.questions[this.currentStep];
+                    
+                    // Determine which parameter we're asking about
+                    const parameters = ['origin', 'destination', 'departure_date', 'travel_class', 'traveller_type'];
+                    const currentParam = parameters[this.currentStep];
+                    
+                    if (currentParam === 'origin' || currentParam === 'destination') {
+                        // Show continent options
+                        this.addBotMessageWithOptions(currentQuestion, this.continents, currentParam);
+                    } else if (currentParam === 'travel_class') {
+                        // Show travel class options
+                        this.addBotMessageWithOptions(currentQuestion, this.travel_class_options, currentParam);
+                    } else if (currentParam === 'traveller_type') {
+                        // Show traveller type options
+                        this.addBotMessageWithOptions(currentQuestion, this.traveller_type_options, currentParam);
+                    } else {
+                        // For departure_date, use regular text input
+                        this.addBotMessage(currentQuestion);
+                    }
+                } else {
+                    this.addBotMessage('Perfect! Let me find the best flight options for you...');
+                    setTimeout(() => {
+                        this.addAirlineOptions();
+                    }, 1500);
+                }
+            }
+
+            handleUserInput() {
+                const input = document.getElementById('chatInput');
+                const userInput = input.value.trim();
+                
+                // Only allow text input for departure_date (step 2)
+                if (userInput && this.currentStep === 2) {
+                    this.addUserMessage(userInput);
+                    
+                    // Store the departure_date
+                    this.userInputs.departure_date = userInput;
+                    
+                    this.currentStep++;
+                    input.value = '';
+                    
+                    setTimeout(() => {
+                        this.askNextQuestion();
+                    }, 500);
+                }
+            }
+
+            scrollToBottom() {
+                const messagesContainer = document.getElementById('chatMessages');
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        }
+
+        // Initialize the chatbot
+        const chatbot = new FlightChatbot();
+    </script>
+</body>
+</html>
