@@ -1,0 +1,68 @@
+/* style.css */
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f1f1f1;
+    margin: 0;
+    padding: 0;
+}
+
+#chatbox {
+    width: 60%;
+    max-width: 800px;
+    margin: 3rem auto;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+}
+
+#chatlog {
+    height: 400px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+    border: 1px solid #ddd;
+    padding: 1rem;
+    border-radius: 6px;
+    background-color: #fafafa;
+}
+
+.message {
+    margin: 0.5rem 0;
+    padding: 0.6rem 1rem;
+    border-radius: 20px;
+    display: inline-block;
+    max-width: 75%;
+    word-wrap: break-word;
+    line-height: 1.4;
+}
+
+.user {
+    background-color: #0084ff;
+    color: white;
+    text-align: right;
+    float: right;
+    clear: both;
+}
+
+.bot {
+    background-color: #e5e5ea;
+    color: black;
+    text-align: left;
+    float: left;
+    clear: both;
+}
+
+#input {
+    width: 100%;
+    padding: 1rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+#input:focus {
+    border-color: #007bff;
+}

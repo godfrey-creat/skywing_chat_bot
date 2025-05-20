@@ -1,0 +1,1861 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SkyWings - Flight Recommendations</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+    />
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+      }
+
+      .gradient-bg {
+        background: linear-gradient(135deg, #1e3a8a 0%, #0284c7 100%);
+      }
+
+      .flight-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      }
+
+      .search-box {
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .login-container {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      }
+
+      .profile-container {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      }
+
+      .loading-spinner {
+        border: 4px solid rgba(0, 0, 0, 0.1);
+        border-left-color: #1e40af;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Dropdown styling */
+      /* Comprehensive dropdown styling */
+      select {
+        /* Base styling */
+        color: #374151;
+        background-color: white;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+
+        /* Custom dropdown arrow */
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.75rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+
+        /* Remove default styling */
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+      }
+
+      /* Ensure dropdown text is visible in the header/search area */
+      .search-box select,
+      header select {
+        background-color: white;
+        color: #374151;
+        border-color: #d1d5db;
+      }
+
+      /* Option styling */
+      select option {
+        padding: 0.5rem;
+        background-color: white;
+        color: #374151;
+      }
+
+      /* Focus state */
+      select:focus {
+        outline: none;
+        ring: 2px;
+        ring-color: #3b82f6;
+        border-color: #3b82f6;
+      }
+
+      /* Hover state */
+      select:hover {
+        border-color: #93c5fd;
+      }
+
+      /* Disabled state */
+      select:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      /* Auth tabs styling */
+      .auth-tab.active {
+        color: #1e40af;
+        border-bottom: 2px solid #1e40af;
+      }
+    </style>
+  </head>
+
+  <body class="bg-gray-100 font-sans">
+    <!-- Login/Register Modal -->
+    <div
+      id="loginModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    >
+      <div class="login-container bg-white rounded-xl p-8 w-full max-w-md">
+        <div class="text-center mb-6">
+          <i class="fas fa-plane-departure text-5xl text-blue-600 mb-4"></i>
+          <h2 class="text-3xl font-bold text-gray-800">Welcome to SkyWings</h2>
+          <p class="text-gray-600 mt-2">Your journey begins here</p>
+        </div>
+
+        <!-- Auth Tabs -->
+        <div class="flex border-b border-gray-200 mb-6">
+          <button
+            id="loginTab"
+            class="auth-tab active flex-1 py-3 font-medium text-center"
+          >
+            Login
+          </button>
+          <button
+            id="registerTab"
+            class="auth-tab flex-1 py-3 font-medium text-center text-gray-500"
+          >
+            Register
+          </button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" class="space-y-5">
+          <div>
+            <label
+              for="loginEmail"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Email</label
+            >
+            <input
+              type="email"
+              id="loginEmail"
+              name="loginEmail"
+              required
+              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              placeholder="Enter your email"
+            />
+          </div>
+
+          <div>
+            <label
+              for="loginPassword"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Password</label
+            >
+            <input
+              type="password"
+              id="loginPassword"
+              name="loginPassword"
+              required
+              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              placeholder="Enter your password"
+            />
+          </div>
+
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <input
+                type="checkbox"
+                id="remember"
+                name="remember"
+                class="h-4 w-4 text-blue-600 border-gray-300 rounded"
+              />
+              <label for="remember" class="ml-2 block text-sm text-gray-700"
+                >Remember me</label
+              >
+            </div>
+            <a
+              href="#"
+              class="text-sm font-medium text-blue-600 hover:text-blue-800"
+              >Forgot password?</a
+            >
+          </div>
+
+          <button
+            type="submit"
+            class="w-full gradient-bg text-white py-3 px-4 rounded-lg font-semibold hover:opacity-90 transition flex items-center justify-center"
+          >
+            <i class="fas fa-sign-in-alt mr-2"></i> Login
+          </button>
+
+          <div id="loginError" class="text-red-500 text-sm text-center hidden">
+            Invalid email or password. Please try again.
+          </div>
+        </form>
+
+        <!-- Register Form -->
+        <form id="registerForm" class="space-y-5 hidden">
+          <div>
+            <label
+              for="registerEmail"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Email</label
+            >
+            <input
+              type="email"
+              id="registerEmail"
+              name="registerEmail"
+              required
+              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              placeholder="Enter your email"
+            />
+          </div>
+
+          <div>
+            <label
+              for="registerUsername"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Username</label
+            >
+            <input
+              type="text"
+              id="registerUsername"
+              name="registerUsername"
+              required
+              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              placeholder="Choose a username"
+            />
+          </div>
+
+          <div>
+            <label
+              for="registerPassword"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Password</label
+            >
+            <input
+              type="password"
+              id="registerPassword"
+              name="registerPassword"
+              required
+              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              placeholder="Choose a password"
+            />
+          </div>
+
+          <div>
+            <label
+              for="confirmPassword"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Confirm Password</label
+            >
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              required
+              class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              placeholder="Confirm your password"
+            />
+          </div>
+
+          <button
+            type="submit"
+            class="w-full gradient-bg text-white py-3 px-4 rounded-lg font-semibold hover:opacity-90 transition flex items-center justify-center"
+          >
+            <i class="fas fa-user-plus mr-2"></i> Create Account
+          </button>
+
+          <div
+            id="registerError"
+            class="text-red-500 text-sm text-center hidden"
+          >
+            Error creating account. Please try again.
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div
+      id="profileModal"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden"
+    >
+      <div class="profile-container bg-white rounded-xl p-8 w-full max-w-md">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold text-gray-800">Your Profile</h2>
+          <button
+            id="closeProfileBtn"
+            class="text-gray-500 hover:text-gray-700"
+          >
+            <i class="fas fa-times text-xl"></i>
+          </button>
+        </div>
+
+        <form id="profileForm" class="space-y-4">
+          <div>
+            <label
+              for="age"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Age</label
+            >
+            <input
+              type="number"
+              id="age"
+              name="age"
+              min="18"
+              max="120"
+              class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+              placeholder="Your age"
+            />
+          </div>
+
+          <div>
+            <label
+              for="gender"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Gender</label
+            >
+            <select
+              id="gender"
+              name="gender"
+              class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+            >
+              <option value="">Select gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="non-binary">Non-binary</option>
+              <option value="prefer-not-to-say">Prefer not to say</option>
+            </select>
+          </div>
+
+          <div>
+            <label
+              for="travelFrequency"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >How often do you travel?</label
+            >
+            <select
+              id="travelFrequency"
+              name="travelFrequency"
+              class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+            >
+              <option value="">Select frequency</option>
+              <option value="rarely">Rarely (0-1 times per year)</option>
+              <option value="occasionally">
+                Occasionally (2-3 times per year)
+              </option>
+              <option value="frequently">
+                Frequently (4-6 times per year)
+              </option>
+              <option value="very-frequently">
+                Very Frequently (7+ times per year)
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label
+              for="preferredClass"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Preferred Travel Class</label
+            >
+            <select
+              id="preferredClass"
+              name="preferredClass"
+              class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+            >
+              <option value="">Select preferred class</option>
+              <option value="Economy Class">Economy</option>
+              <option value="Premium Economy">Premium Economy</option>
+              <option value="Business Class">Business</option>
+              <option value="First Class">First</option>
+            </select>
+          </div>
+
+          <div>
+            <label
+              for="preferredAirline"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >Preferred Airline (if any)</label
+            >
+            <select
+              id="preferredAirline"
+              name="preferredAirline"
+              class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+            >
+              <option value="">No preference</option>
+              <!-- Airlines populated dynamically -->
+            </select>
+          </div>
+
+          <button
+            type="submit"
+            class="w-full gradient-bg text-white py-2 px-4 rounded-lg font-semibold hover:opacity-90 transition mt-4"
+          >
+            Save Profile
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Main Content (hidden until login) -->
+    <div id="mainContent" class="hidden">
+      <!-- Header -->
+      <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+          <div class="flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+              <i class="fas fa-plane text-2xl"></i>
+              <h1 class="text-2xl font-bold">SkyWings</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+              <button
+                id="profileBtn"
+                class="bg-blue-700 text-white px-4 py-1 rounded-full text-sm font-semibold hover:bg-blue-800 transition flex items-center"
+              >
+                <i class="fas fa-user-cog mr-2"></i> Profile
+              </button>
+              <div class="flex items-center space-x-2">
+                <i class="fas fa-user-circle text-xl"></i>
+                <span id="welcomeUser" class="font-medium"></span>
+              </div>
+              <button
+                id="logoutBtn"
+                class="bg-white text-blue-600 px-4 py-1 rounded-full text-sm font-semibold hover:bg-gray-100 transition"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+
+          <!-- Search Section -->
+          <div class="mt-8 mb-6">
+            <div class="search-box bg-white rounded-xl p-6">
+              <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                Find your perfect flight
+              </h2>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1"
+                    >From</label
+                  >
+                  <select
+                    id="originSelect"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select origin</option>
+                    <!-- Continents will be populated dynamically -->
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1"
+                    >To</label
+                  >
+                  <select
+                    id="destinationSelect"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select destination</option>
+                    <!-- Continents will be populated dynamically -->
+                  </select>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1"
+                    >Class</label
+                  >
+                  <select
+                    id="classSelect"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="Any">Any Class</option>
+                    <!-- Classes will be populated dynamically -->
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1"
+                    >Departure Date</label
+                  >
+                  <input
+                    id="departureDate"
+                    type="date"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1"
+                    >Traveller Type</label
+                  >
+                  <select
+                    id="travellerTypeSelect"
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="Any">Any Type</option>
+                    <!-- Traveller types will be populated dynamically -->
+                  </select>
+                </div>
+
+                <div class="flex items-end">
+                  <button
+                    id="searchBtn"
+                    class="gradient-bg text-white py-2 px-6 rounded-lg font-semibold hover:opacity-90 transition w-full flex items-center justify-center"
+                  >
+                    <i class="fas fa-search mr-2"></i> Search
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="container mx-auto px-4 py-8">
+        <!-- Loading State -->
+        <div id="loadingState" class="hidden">
+          <div class="flex flex-col items-center justify-center py-12">
+            <div class="loading-spinner mb-4"></div>
+            <p class="text-gray-600">
+              Finding the best flight recommendations for you...
+            </p>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden">
+          <div class="bg-white rounded-xl p-8 text-center">
+            <i class="fas fa-plane-departure text-6xl text-blue-200 mb-4"></i>
+            <h2 class="text-2xl font-bold text-gray-800 mb-2">
+              Ready for takeoff!
+            </h2>
+            <p class="text-gray-600 mb-6">
+              Use the search above to find personalized flight recommendations.
+            </p>
+          </div>
+        </div>
+
+        <!-- Personalized Recommendation -->
+        <section id="recommendationsSection" class="mb-12 hidden">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">
+              Personalized Recommendations
+            </h2>
+            <div class="flex space-x-2 class-filters">
+              <button
+                data-class="Any"
+                class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm font-medium filter-btn"
+              >
+                All
+              </button>
+              <button
+                data-class="Economy Class"
+                class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm font-medium filter-btn"
+              >
+                Economy
+              </button>
+              <button
+                data-class="Business Class"
+                class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm font-medium filter-btn"
+              >
+                Business
+              </button>
+              <button
+                data-class="First Class"
+                class="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm font-medium filter-btn"
+              >
+                First
+              </button>
+            </div>
+          </div>
+
+          <div
+            id="recommendationsContainer"
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            <!-- Recommendation cards will be inserted here -->
+          </div>
+        </section>
+
+        <!-- Popular Destinations -->
+        <section class="mb-12">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6">
+            Popular Destinations
+          </h2>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div
+              class="relative rounded-xl overflow-hidden h-40 group cursor-pointer"
+              data-from="Asia"
+              data-to="Europe"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1499856871958-5b9627545d1a?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+                alt="Paris"
+                class="w-full h-full object-cover transition duration-300 group-hover:scale-105"
+              />
+              <div
+                class="absolute inset-0 bg-black bg-opacity-30 flex items-end p-4"
+              >
+                <div>
+                  <h3 class="text-white font-bold text-lg">Asia to Europe</h3>
+                  <p class="text-white text-sm">From $399</p>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="relative rounded-xl overflow-hidden h-40 group cursor-pointer"
+              data-from="Asia"
+              data-to="Asia"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1542051841857-5f90071e7989?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+                alt="Tokyo"
+                class="w-full h-full object-cover transition duration-300 group-hover:scale-105"
+              />
+              <div
+                class="absolute inset-0 bg-black bg-opacity-30 flex items-end p-4"
+              >
+                <div>
+                  <h3 class="text-white font-bold text-lg">Asia to Asia</h3>
+                  <p class="text-white text-sm">From $299</p>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="relative rounded-xl overflow-hidden h-40 group cursor-pointer"
+              data-from="Europe"
+              data-to="Asia"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1518391846015-55a9cc003b25?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+                alt="Bali"
+                class="w-full h-full object-cover transition duration-300 group-hover:scale-105"
+              />
+              <div
+                class="absolute inset-0 bg-black bg-opacity-30 flex items-end p-4"
+              >
+                <div>
+                  <h3 class="text-white font-bold text-lg">Europe to Asia</h3>
+                  <p class="text-white text-sm">From $499</p>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="relative rounded-xl overflow-hidden h-40 group cursor-pointer"
+              data-from="America"
+              data-to="Europe"
+            >
+              <img
+                src="https://images.unsplash.com/photo-1533929736458-ca588d08c8be?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80"
+                alt="New York"
+                class="w-full h-full object-cover transition duration-300 group-hover:scale-105"
+              />
+              <div
+                class="absolute inset-0 bg-black bg-opacity-30 flex items-end p-4"
+              >
+                <div>
+                  <h3 class="text-white font-bold text-lg">
+                    America to Europe
+                  </h3>
+                  <p class="text-white text-sm">From $299</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Special Offers -->
+        <section>
+          <h2 class="text-2xl font-bold text-gray-800 mb-6">Special Offers</h2>
+
+          <div
+            class="bg-gradient-to-r from-blue-600 to-blue-800 rounded-xl p-6 text-white"
+          >
+            <div class="flex flex-col md:flex-row items-center">
+              <div class="md:w-1/2 mb-6 md:mb-0">
+                <h3 class="text-2xl font-bold mb-2">Summer Sale!</h3>
+                <p class="mb-4">
+                  Book your summer vacation now and save up to 30% on selected
+                  flights.
+                </p>
+                <button
+                  class="bg-white text-blue-600 py-2 px-6 rounded-lg font-semibold hover:bg-gray-100 transition"
+                >
+                  View Offers
+                </button>
+              </div>
+              <div class="md:w-1/2 flex justify-center">
+                <div class="relative w-48 h-48">
+                  <div
+                    class="absolute inset-0 bg-white bg-opacity-20 rounded-full animate-pulse"
+                  ></div>
+                  <div
+                    class="absolute inset-4 bg-white bg-opacity-20 rounded-full animate-pulse delay-100"
+                  ></div>
+                  <div
+                    class="absolute inset-8 bg-white bg-opacity-20 rounded-full animate-pulse delay-200"
+                  ></div>
+                  <div
+                    class="absolute inset-0 flex items-center justify-center"
+                  >
+                    <span class="text-4xl font-bold">30% OFF</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- Footer -->
+      <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <h3 class="text-lg font-semibold mb-4">SkyWings</h3>
+              <p class="text-gray-400">
+                Your trusted partner for flight recommendations and bookings.
+              </p>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+              <ul class="space-y-2">
+                <li>
+                  <a href="#" class="text-gray-400 hover:text-white transition"
+                    >Home</a
+                  >
+                </li>
+                <li>
+                  <a href="#" class="text-gray-400 hover:text-white transition"
+                    >Flights</a
+                  >
+                </li>
+                <li>
+                  <a href="#" class="text-gray-400 hover:text-white transition"
+                    >Destinations</a
+                  >
+                </li>
+                <li>
+                  <a href="#" class="text-gray-400 hover:text-white transition"
+                    >Offers</a
+                  >
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold mb-4">Support</h3>
+              <ul class="space-y-2">
+                <li>
+                  <a href="#" class="text-gray-400 hover:text-white transition"
+                    >Help Center</a
+                  >
+                </li>
+                <li>
+                  <a href="#" class="text-gray-400 hover:text-white transition"
+                    >Contact Us</a
+                  >
+                </li>
+                <li>
+                  <a href="#" class="text-gray-400 hover:text-white transition"
+                    >FAQs</a
+                  >
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold mb-4">Newsletter</h3>
+              <p class="text-gray-400 mb-4">
+                Subscribe to get special offers and travel tips.
+              </p>
+              <div class="flex">
+                <input
+                  type="email"
+                  placeholder="Your email"
+                  class="px-4 py-2 rounded-l-lg w-full text-gray-800"
+                />
+                <button class="gradient-bg px-4 py-2 rounded-r-lg">
+                  <i class="fas fa-paper-plane"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div
+            class="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400"
+          >
+            <p>&copy; 2025 SkyWings. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Template for recommendation card -->
+    <template id="recommendationCardTemplate">
+      <div
+        class="flight-card bg-white rounded-xl overflow-hidden shadow-md transition duration-300"
+      >
+        <div class="relative">
+          <img src="" alt="" class="card-img w-full h-48 object-cover" />
+          <div
+            class="card-badge absolute top-4 right-4 px-3 py-1 rounded-full text-xs font-semibold hidden"
+          ></div>
+        </div>
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <h3 class="card-title text-xl font-bold text-gray-800"></h3>
+              <p class="card-details text-gray-500 text-sm"></p>
+            </div>
+            <div class="text-right">
+              <span class="card-price text-2xl font-bold text-blue-600"></span>
+              <p
+                class="card-original-price text-gray-500 text-xs line-through hidden"
+              ></p>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center text-sm mb-4">
+            <div>
+              <p class="card-route font-medium"></p>
+              <p class="card-date text-gray-500"></p>
+            </div>
+            <div class="text-right">
+              <p class="card-rating font-medium"></p>
+              <p class="card-value-rating text-gray-500"></p>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-2 mb-4">
+            <i class="fas fa-plane-departure text-blue-500"></i>
+            <span class="card-airline text-gray-700"></span>
+          </div>
+
+          <button
+            class="w-full gradient-bg text-white py-2 px-4 rounded-lg font-medium hover:opacity-90 transition"
+          >
+            Book Now
+          </button>
+        </div>
+      </div>
+    </template>
+
+<div style="position: relative; bottom: 1px; right: 1px;">
+    <!-- Chatbot Toggle Button -->
+    <div class="chatbot-toggle" id="chatbotToggle">
+        <div class="airplane-icon">✈️</div>
+    </div>
+
+    <!-- Chatbot Container -->
+    <div class="chatbot-container" id="chatbotContainer">
+        <div class="chatbot-header">
+            <div class="chatbot-title">✈️ Flight Assistant</div>
+            <button class="close-btn" id="closeChatbot">×</button>
+        </div>
+        
+        <div class="chat-messages" id="chatMessages">
+            <!-- Messages will be dynamically added here -->
+        </div>
+        
+        <div class="chat-input-container">
+            <input 
+                type="text" 
+                class="chat-input" 
+                id="chatInput" 
+                placeholder="Type your message..."
+                disabled
+            >
+        </div>
+    </div>
+
+    <script>
+        class FlightChatbot {
+            constructor() {
+                this.currentStep = 0;
+                this.userInputs = {
+                    origin: '',
+                    destination: '',
+                    departure_date: '',
+                    travel_class: '',
+                    traveller_type: ''
+                };
+                
+                this.questions = [
+                    'What is your origin? (Select continent)',
+                    'What is your destination? (Select continent)',
+                    'What is your departure date? (Please use DD/MM/YYYY format)',
+                    'What is your travel class?',
+                    'What is your traveller type?'
+                ];
+
+                this.continents = [
+                    'Africa', 'Antarctica', 'Asia', 'Australia/Oceania', 
+                    'Europe', 'North America', 'South America'
+                ];
+
+                this.travel_class_options = [
+                    'Economy Class', 'Premium Economy', 'Business Class', 'First Class'
+                ];
+
+                this.traveller_type_options = [
+                    'Solo Leisure', 'Family Leisure', 'Business', 'Couple Leisure'
+                ];
+
+                this.airlines = [
+                    { name: 'SkyBlue Airlines', price: '$299', duration: '2h 30m', departure: '08:00' },
+                    { name: 'CloudWings Express', price: '$349', duration: '2h 45m', departure: '10:30' },
+                    { name: 'AeroFly International', price: '$279', duration: '3h 15m', departure: '14:20' },
+                    { name: 'JetStream Airways', price: '$389', duration: '2h 20m', departure: '16:45' },
+                    { name: 'WindRider Airlines', price: '$319', duration: '2h 55m', departure: '19:10' }
+                ];
+
+                this.init();
+            }
+
+            init() {
+                const toggle = document.getElementById('chatbotToggle');
+                const container = document.getElementById('chatbotContainer');
+                const closeBtn = document.getElementById('closeChatbot');
+                const input = document.getElementById('chatInput');
+
+                toggle.addEventListener('click', () => this.openChatbot());
+                closeBtn.addEventListener('click', () => this.closeChatbot());
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.handleUserInput();
+                });
+            }
+
+            openChatbot() {
+                const container = document.getElementById('chatbotContainer');
+                const input = document.getElementById('chatInput');
+                
+                container.classList.add('active');
+                
+                if (this.currentStep === 0) {
+                    this.addBotMessage('Hello! I\'m your flight booking assistant. Let me help you find the perfect flight across continents. ✈️');
+                    setTimeout(() => {
+                        this.askNextQuestion();
+                    }, 1000);
+                }
+                
+                input.disabled = false;
+                input.focus();
+            }
+
+            closeChatbot() {
+                const container = document.getElementById('chatbotContainer');
+                container.classList.remove('active');
+            }
+
+            addBotMessage(message) {
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message bot-message';
+                messageDiv.textContent = message;
+                messagesContainer.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            addBotMessageWithOptions(message, options, parameterName) {
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message bot-message';
+                
+                let optionsHTML = `<div style="margin-bottom: 10px;">${message}</div>`;
+                optionsHTML += '<div class="option-buttons">';
+                
+                options.forEach((option) => {
+                    optionsHTML += `
+                        <div class="option-btn" onclick="chatbot.selectOption('${option}', '${parameterName}')">
+                            ${option}
+                        </div>
+                    `;
+                });
+                
+                optionsHTML += '</div>';
+                messageDiv.innerHTML = optionsHTML;
+                messagesContainer.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            addUserMessage(message) {
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message user-message';
+                messageDiv.textContent = message;
+                messagesContainer.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            selectOption(option, parameterName) {
+                // Store the selection
+                this.userInputs[parameterName] = option;
+                
+                // Add user message
+                this.addUserMessage(option);
+                
+                // Move to next step
+                this.currentStep++;
+                
+                setTimeout(() => {
+                    this.askNextQuestion();
+                }, 500);
+            }
+
+            addAirlineOptions() {
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message bot-message';
+                
+                let optionsHTML = '<div style="margin-bottom: 10px;">Here are the available airline recommendations:</div>';
+                
+                this.airlines.forEach((airline, index) => {
+                    optionsHTML += `
+                        <div class="airline-option" onclick="chatbot.selectAirline(${index})">
+                            <strong>${airline.name}</strong><br>
+                            Price: ${airline.price} | Duration: ${airline.duration}<br>
+                            Departure: ${airline.departure}
+                        </div>
+                    `;
+                });
+                
+                messageDiv.innerHTML = optionsHTML;
+                messagesContainer.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            selectAirline(index) {
+                const selectedAirline = this.airlines[index];
+                this.addUserMessage(`Selected: ${selectedAirline.name}`);
+                
+                setTimeout(() => {
+                    this.showFlightConfirmation(selectedAirline);
+                }, 500);
+            }
+
+            showFlightConfirmation(airline) {
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message bot-message';
+                
+                const confirmationHTML = `
+                    <div class="notification">
+                        <h4>🎉 Flight Booking Confirmation</h4>
+                        <p><strong>Airline:</strong> ${airline.name}</p>
+                        <p><strong>Route:</strong> ${this.userInputs.origin} → ${this.userInputs.destination}</p>
+                        <p><strong>departure_date:</strong> ${this.userInputs.departure_date}</p>
+                        <p><strong>travel_class:</strong> ${this.userInputs.travel_class}</p>
+                        <p><strong>traveller_type:</strong> ${this.userInputs.traveller_type}</p>
+                        <p><strong>Price:</strong> ${airline.price}</p>
+                        <p><strong>Duration:</strong> ${airline.duration}</p>
+                        <p><strong>Departure:</strong> ${airline.departure}</p>
+                    </div>
+                `;
+                
+                messageDiv.innerHTML = confirmationHTML;
+                messagesContainer.appendChild(messageDiv);
+                this.scrollToBottom();
+
+                setTimeout(() => {
+                    this.addBotMessage('Thank you for booking with us! Have a wonderful flight! ✈️');
+                    this.addBotMessage('You can close this chat or start a new booking by refreshing.');
+                }, 1000);
+            }
+
+            askNextQuestion() {
+                if (this.currentStep < this.questions.length) {
+                    const currentQuestion = this.questions[this.currentStep];
+                    
+                    // Determine which parameter we're asking about
+                    const parameters = ['origin', 'destination', 'departure_date', 'travel_class', 'traveller_type'];
+                    const currentParam = parameters[this.currentStep];
+                    
+                    if (currentParam === 'origin' || currentParam === 'destination') {
+                        // Show continent options
+                        this.addBotMessageWithOptions(currentQuestion, this.continents, currentParam);
+                    } else if (currentParam === 'travel_class') {
+                        // Show travel class options
+                        this.addBotMessageWithOptions(currentQuestion, this.travel_class_options, currentParam);
+                    } else if (currentParam === 'traveller_type') {
+                        // Show traveller type options
+                        this.addBotMessageWithOptions(currentQuestion, this.traveller_type_options, currentParam);
+                    } else {
+                        // For departure_date, use regular text input
+                        this.addBotMessage(currentQuestion);
+                    }
+                } else {
+                    this.addBotMessage('Perfect! Let me find the best flight options for you...');
+                    setTimeout(() => {
+                        this.addAirlineOptions();
+                    }, 1500);
+                }
+            }
+
+            handleUserInput() {
+                const input = document.getElementById('chatInput');
+                const userInput = input.value.trim();
+                
+                // Only allow text input for departure_date (step 2)
+                if (userInput && this.currentStep === 2) {
+                    this.addUserMessage(userInput);
+                    
+                    // Store the departure_date
+                    this.userInputs.departure_date = userInput;
+                    
+                    this.currentStep++;
+                    input.value = '';
+                    
+                    setTimeout(() => {
+                        this.askNextQuestion();
+                    }, 500);
+                }
+            }
+
+            scrollToBottom() {
+                const messagesContainer = document.getElementById('chatMessages');
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        }
+
+        // Initialize the chatbot
+        const chatbot = new FlightChatbot();
+    </script>
+</div>
+
+    <script>
+      // User data storage system
+      let users = [];
+
+      // Try to load existing users from localStorage on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        // Load saved users
+        const savedUsers = localStorage.getItem("skywingsUsers");
+        if (savedUsers) {
+          try {
+            users = JSON.parse(savedUsers);
+            console.log("Loaded user data:", users.length + " users found");
+          } catch (e) {
+            console.error("Error loading saved users:", e);
+            users = [];
+          }
+        }
+
+        if (users.length === 0) {
+          users.push({
+            email: "demo@example.com",
+            username: "Demo User",
+            password: "1234",
+            profile: {
+              age: 30,
+              gender: "prefer-not-to-say",
+              travelFrequency: "occasionally",
+              preferredClass: "Business Class",
+              preferredAirline: "Singapore Airlines",
+            },
+          });
+          saveUsers();
+        }
+
+        // Elements
+        const loginForm = document.getElementById("loginForm");
+        const registerForm = document.getElementById("registerForm");
+        const loginTab = document.getElementById("loginTab");
+        const registerTab = document.getElementById("registerTab");
+        const loginError = document.getElementById("loginError");
+        const registerError = document.getElementById("registerError");
+        const loginModal = document.getElementById("loginModal");
+        const mainContent = document.getElementById("mainContent");
+        const welcomeUser = document.getElementById("welcomeUser");
+        const logoutBtn = document.getElementById("logoutBtn");
+        const searchBtn = document.getElementById("searchBtn");
+        const profileBtn = document.getElementById("profileBtn");
+        const profileModal = document.getElementById("profileModal");
+        const closeProfileBtn = document.getElementById("closeProfileBtn");
+        const profileForm = document.getElementById("profileForm");
+        const preferredAirlineSelect =
+          document.getElementById("preferredAirline");
+        const originSelect = document.getElementById("originSelect");
+        const destinationSelect = document.getElementById("destinationSelect");
+        const classSelect = document.getElementById("classSelect");
+        const travellerTypeSelect = document.getElementById(
+          "travellerTypeSelect"
+        );
+        const departureDate = document.getElementById("departureDate");
+        const loadingState = document.getElementById("loadingState");
+        const emptyState = document.getElementById("emptyState");
+        const recommendationsSection = document.getElementById(
+          "recommendationsSection"
+        );
+        const recommendationsContainer = document.getElementById(
+          "recommendationsContainer"
+        );
+        const filterButtons = document.querySelectorAll(".filter-btn");
+        const popularDestinations = document.querySelectorAll(
+          ".group.cursor-pointer"
+        );
+
+        // Auth tab switching
+        loginTab.addEventListener("click", function () {
+          loginTab.classList.add("active");
+          registerTab.classList.remove("active");
+          loginTab.classList.remove("text-gray-500");
+          registerTab.classList.add("text-gray-500");
+          loginForm.classList.remove("hidden");
+          registerForm.classList.add("hidden");
+          loginError.classList.add("hidden");
+          registerError.classList.add("hidden");
+        });
+
+        registerTab.addEventListener("click", function () {
+          registerTab.classList.add("active");
+          loginTab.classList.remove("active");
+          registerTab.classList.remove("text-gray-500");
+          loginTab.classList.add("text-gray-500");
+          registerForm.classList.remove("hidden");
+          loginForm.classList.add("hidden");
+          loginError.classList.add("hidden");
+          registerError.classList.add("hidden");
+        });
+
+        // Initialize today's date
+        const today = new Date();
+        departureDate.min = today.toISOString().split("T")[0];
+        departureDate.value = today.toISOString().split("T")[0];
+
+        // Set default states
+        loadingState.classList.add("hidden");
+        emptyState.classList.remove("hidden");
+        recommendationsSection.classList.add("hidden");
+
+        // Check if user is already logged in (from sessionStorage)
+        if (sessionStorage.getItem("loggedIn") === "true") {
+          loginModal.classList.add("hidden");
+          mainContent.classList.remove("hidden");
+          welcomeUser.textContent = `Hi, ${sessionStorage.getItem("username")}`;
+          fetchProfileData();
+          fetchDropdownOptions();
+        }
+
+        // Save users to localStorage (simulating file save)
+        function saveUsers() {
+          localStorage.setItem("skywingsUsers", JSON.stringify(users));
+          console.log("Saved user data:", users.length + " users");
+        }
+
+        // Registration function
+        function registerUser(email, username, password) {
+          // Check if email already exists
+          if (users.some((user) => user.email === email)) {
+            return {
+              success: false,
+              message: "Email already registered",
+            };
+          }
+
+          // Create new user
+          const newUser = {
+            email: email,
+            username: username,
+            password: password,
+            profile: {},
+          };
+
+          users.push(newUser);
+          saveUsers();
+
+          return {
+            success: true,
+            message: "Registration successful",
+          };
+        }
+
+        // Login function
+        function loginUser(email, password) {
+          const user = users.find(
+            (user) => user.email === email && user.password === password
+          );
+
+          if (user) {
+            return {
+              success: true,
+              username: user.username,
+              email: user.email,
+            };
+          } else {
+            return {
+              success: false,
+              message: "Invalid email or password",
+            };
+          }
+        }
+
+        // Update profile function
+        function updateUserProfile(email, profileData) {
+          const userIndex = users.findIndex((user) => user.email === email);
+
+          if (userIndex !== -1) {
+            users[userIndex].profile = profileData;
+            saveUsers();
+            return {
+              success: true,
+            };
+          } else {
+            return {
+              success: false,
+              message: "User not found",
+            };
+          }
+        }
+
+        // Get profile function
+        function getUserProfile(email) {
+          const user = users.find((user) => user.email === email);
+
+          if (user && user.profile) {
+            return {
+              success: true,
+              ...user.profile,
+            };
+          } else {
+            return {
+              success: false,
+              message: "Profile not found",
+            };
+          }
+        }
+
+        // Login functionality
+        loginForm.addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const email = document.getElementById("loginEmail").value;
+          const password = document.getElementById("loginPassword").value;
+
+          // Use login function instead of calling API
+          const result = loginUser(email, password);
+
+          if (result.success) {
+            loginError.classList.add("hidden");
+            loginModal.classList.add("hidden");
+            mainContent.classList.remove("hidden");
+            welcomeUser.textContent = `Hi, ${result.username}`;
+
+            // Store login state in sessionStorage
+            sessionStorage.setItem("loggedIn", "true");
+            sessionStorage.setItem("username", result.username);
+            sessionStorage.setItem("email", result.email);
+
+            // Fetch additional data
+            fetchProfileData();
+            fetchDropdownOptions();
+          } else {
+            loginError.classList.remove("hidden");
+            loginError.textContent =
+              result.message || "Invalid email or password. Please try again.";
+          }
+        });
+
+        // Register functionality
+        registerForm.addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const email = document.getElementById("registerEmail").value;
+          const username = document.getElementById("registerUsername").value;
+          const password = document.getElementById("registerPassword").value;
+          const confirmPassword =
+            document.getElementById("confirmPassword").value;
+
+          // Validate passwords match
+          if (password !== confirmPassword) {
+            registerError.textContent = "Passwords do not match.";
+            registerError.classList.remove("hidden");
+            return;
+          }
+
+          // Use register function instead of calling API
+          const result = registerUser(email, username, password);
+
+          if (result.success) {
+            // Show success message
+            registerError.textContent =
+              "Account created successfully! Please log in.";
+            registerError.classList.remove("text-red-500");
+            registerError.classList.add("text-green-500");
+            registerError.classList.remove("hidden");
+
+            // Switch to login tab after a short delay
+            setTimeout(() => {
+              loginTab.click();
+              document.getElementById("loginEmail").value = email;
+            }, 2000);
+          } else {
+            registerError.textContent =
+              result.message || "Error creating account. Please try again.";
+            registerError.classList.add("text-red-500");
+            registerError.classList.remove("text-green-500");
+            registerError.classList.remove("hidden");
+          }
+        });
+
+        // Fetch profile data from localStorage
+        function fetchProfileData() {
+          const email = sessionStorage.getItem("email");
+          const result = getUserProfile(email);
+
+          if (result.success) {
+            if (result.age) document.getElementById("age").value = result.age;
+            if (result.gender)
+              document.getElementById("gender").value = result.gender;
+            if (result.travelFrequency)
+              document.getElementById("travelFrequency").value =
+                result.travelFrequency;
+            if (result.preferredClass)
+              document.getElementById("preferredClass").value =
+                result.preferredClass;
+            if (result.preferredAirline)
+              document.getElementById("preferredAirline").value =
+                result.preferredAirline;
+          }
+        }
+
+        // Fetch dropdown options
+        function fetchDropdownOptions() {
+          // Fallback data
+          const fallbackData = {
+            airlines: [
+              "Singapore Airlines",
+              "Qatar Airways",
+              "All Nippon Airways",
+              "Emirates",
+              "Japan Airlines",
+              "Cathay Pacific Airways",
+              "EVA Air",
+              "Lufthansa",
+              "Korean Air",
+              "Delta Air Lines",
+            ],
+            continents: ["Asia", "Europe", "America", "Oceania", "Africa"],
+            classes: [
+              "Economy Class",
+              "Premium Economy",
+              "Business Class",
+              "First Class",
+            ],
+            traveller_types: [
+              "Solo Leisure",
+              "Family Leisure",
+              "Business",
+              "Couple Leisure",
+            ],
+          };
+          populateDropdowns(fallbackData);
+        }
+
+        // Populate dropdowns with options
+        function populateDropdowns(data) {
+          // Clear existing options but keep the first one
+          function clearOptions(select) {
+            while (select.options.length > 1) {
+              select.remove(1);
+            }
+          }
+
+          // Airlines dropdown in profile
+          clearOptions(preferredAirlineSelect);
+          data.airlines.forEach((airline) => {
+            const option = document.createElement("option");
+            option.value = airline;
+            option.textContent = airline;
+            preferredAirlineSelect.appendChild(option);
+          });
+
+          // Origin and destination dropdowns
+          clearOptions(originSelect);
+          clearOptions(destinationSelect);
+          data.continents.forEach((continent) => {
+            const originOption = document.createElement("option");
+            originOption.value = continent;
+            originOption.textContent = continent;
+            originSelect.appendChild(originOption);
+
+            const destOption = document.createElement("option");
+            destOption.value = continent;
+            destOption.textContent = continent;
+            destinationSelect.appendChild(destOption);
+          });
+
+          // Class dropdown
+          clearOptions(classSelect);
+          data.classes.forEach((travelClass) => {
+            const option = document.createElement("option");
+            option.value = travelClass;
+            option.textContent = travelClass.replace(" Class", "");
+            classSelect.appendChild(option);
+          });
+
+          // Traveller type dropdown
+          clearOptions(travellerTypeSelect);
+          data.traveller_types.forEach((type) => {
+            const option = document.createElement("option");
+            option.value = type;
+            option.textContent = type;
+            travellerTypeSelect.appendChild(option);
+          });
+        }
+
+        // Profile modal functionality
+        profileBtn.addEventListener("click", function () {
+          profileModal.classList.remove("hidden");
+        });
+
+        closeProfileBtn.addEventListener("click", function () {
+          profileModal.classList.add("hidden");
+        });
+
+        // Close profile modal when clicking outside
+        profileModal.addEventListener("click", function (e) {
+          if (e.target === profileModal) {
+            profileModal.classList.add("hidden");
+          }
+        });
+
+        // Profile form submission
+        profileForm.addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const email = sessionStorage.getItem("email");
+
+          const profileData = {
+            age: document.getElementById("age").value,
+            gender: document.getElementById("gender").value,
+            travelFrequency: document.getElementById("travelFrequency").value,
+            preferredClass: document.getElementById("preferredClass").value,
+            preferredAirline: document.getElementById("preferredAirline").value,
+          };
+
+          // Use update profile function instead of calling API
+          const result = updateUserProfile(email, profileData);
+
+          profileModal.classList.add("hidden");
+
+          if (result.success) {
+            alert("Profile updated successfully!");
+          } else {
+            alert("Error updating profile. Please try again later.");
+          }
+        });
+
+        // Logout functionality
+        logoutBtn.addEventListener("click", function () {
+          sessionStorage.removeItem("loggedIn");
+          sessionStorage.removeItem("username");
+          sessionStorage.removeItem("email");
+          location.reload();
+        });
+
+        // Flight search functionality
+        searchBtn.addEventListener("click", function () {
+          performSearch();
+        });
+
+        // Filter buttons for class type
+        filterButtons.forEach((button) => {
+          button.addEventListener("click", function () {
+            // Update active button styles
+            filterButtons.forEach((btn) => {
+              btn.classList.remove("bg-blue-100", "text-blue-600");
+              btn.classList.add("bg-gray-100", "text-gray-600");
+            });
+            this.classList.remove("bg-gray-100", "text-gray-600");
+            this.classList.add("bg-blue-100", "text-blue-600");
+
+            // Filter visible cards
+            const selectedClass = this.getAttribute("data-class");
+            const cards =
+              recommendationsContainer.querySelectorAll(".flight-card");
+
+            cards.forEach((card) => {
+              const cardClass = card.getAttribute("data-class");
+              if (selectedClass === "Any" || cardClass === selectedClass) {
+                card.classList.remove("hidden");
+              } else {
+                card.classList.add("hidden");
+              }
+            });
+          });
+        });
+
+        // Popular destinations click handler
+        popularDestinations.forEach((destination) => {
+          destination.addEventListener("click", function () {
+            const from = this.getAttribute("data-from");
+            const to = this.getAttribute("data-to");
+
+            // Set the values in the search form
+            originSelect.value = from;
+            destinationSelect.value = to;
+
+            // Scroll to search section and focus
+            searchBtn.scrollIntoView({ behavior: "smooth" });
+
+            // Highlight search button
+            searchBtn.classList.add("animate-pulse");
+            setTimeout(() => {
+              searchBtn.classList.remove("animate-pulse");
+            }, 1500);
+          });
+        });
+
+        function formatRecommendations(recommendations, travelClass) {
+          return recommendations.map((rec) => {
+            // Format the rating: from "4.8/10" to "★ 4.8"
+            let rating = rec.rating;
+            if (rating && rating.includes("/")) {
+              const ratingValue = rating.split("/")[0];
+              rating = `★ ${ratingValue}`;
+            }
+
+            // Format the value rating: from "4.5/5" to "4.5"
+            let valueRating = rec.value_rating;
+            if (valueRating && valueRating.includes("/")) {
+              valueRating = valueRating.split("/")[0];
+            }
+
+            // Return the formatted recommendation
+            return {
+              airline: rec.airline,
+              class: rec.class || travelClass, // Use the search class if not specified
+              price: rec.price,
+              route: rec.route,
+              rating: rating,
+              value_rating: valueRating,
+              season: rec.season || "Year-round",
+            };
+          });
+        }
+       
+        // Search function
+        function performSearch() {
+          const origin = originSelect.value;
+          const destination = destinationSelect.value;
+          const travelClass = classSelect.value;
+          const departureDateValue = departureDate.value;
+          const travellerType = travellerTypeSelect.value;
+
+          // Validate inputs
+          if (!origin || !destination) {
+            alert("Please select both origin and destination.");
+            return;
+          }
+
+          // Show loading state
+          emptyState.classList.add("hidden");
+          recommendationsSection.classList.add("hidden");
+          loadingState.classList.remove("hidden");
+
+          // Prepare request data
+          const requestData = {
+            origin: origin,
+            destination: destination,
+            class: travelClass,
+            departure: departureDateValue,
+            travellerType: travellerType,
+          };
+
+          // Call the backend API
+          fetch("/recommend", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(requestData),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              loadingState.classList.add("hidden");
+
+              if (
+                data.success &&
+                data.recommendations &&
+                data.recommendations.length > 0
+              ) {
+
+                const formattedRecommendations = data.recommendations.map(
+                  (rec) => {
+                    return {
+                      airline: rec.airline,
+                      class: rec.class || travelClass,
+                      price: rec.price,
+                      route: rec.route,
+                      rating: rec.rating,
+                      value_rating: rec.value_rating,
+                      season: rec.season || "Year-round",
+                    };
+                  }
+                );
+
+                // Display the recommendations
+                displayRecommendations(formattedRecommendations);
+                recommendationsSection.classList.remove("hidden");
+              } else {
+                // Show empty state with message
+                emptyState.classList.remove("hidden");
+                emptyState.querySelector("p").textContent =
+                  data.message ||
+                  "No recommendations found. Try different search criteria.";
+              }
+            })
+            .catch((error) => {
+              console.error("Error fetching recommendations:", error);
+              loadingState.classList.add("hidden");
+              emptyState.classList.remove("hidden");
+              emptyState.querySelector("p").textContent =
+                "Error fetching recommendations. Please try again later.";
+            });
+        }
+
+        // Display recommendations
+        function displayRecommendations(recommendations) {
+          // Clear previous recommendations
+          recommendationsContainer.innerHTML = "";
+
+          // Images for different routes
+          const routeImages = {
+            Asia: "https://images.unsplash.com/photo-1542051841857-5f90071e7989",
+            Europe:
+              "https://images.unsplash.com/photo-1499856871958-5b9627545d1a",
+            America:
+              "https://images.unsplash.com/photo-1533929736458-ca588d08c8be",
+            Oceania:
+              "https://images.unsplash.com/photo-1518391846015-55a9cc003b25",
+            Africa: "https://images.unsplash.com/photo-1547471080-91cb0f5300e0",
+          };
+
+          // Create recommendation cards
+          recommendations.forEach((rec, index) => {
+            // Clone template
+            const template = document.getElementById(
+              "recommendationCardTemplate"
+            );
+            const card = document
+              .importNode(template.content, true)
+              .querySelector(".flight-card");
+
+            // Store class for filtering
+            card.setAttribute("data-class", rec.class);
+
+            // Set image based on route
+            let routeKey = "Asia"; // Default
+            if (rec.route) {
+              const routeParts = rec.route.split(" to ");
+              if (routeParts.length > 0 && routeImages[routeParts[0]]) {
+                routeKey = routeParts[0];
+              }
+            }
+
+            const img = card.querySelector(".card-img");
+            img.src = `${routeImages[routeKey]}?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80`;
+            img.alt = rec.route || "Flight route";
+
+            // Set special badges
+            const badge = card.querySelector(".card-badge");
+            if (index === 0) {
+              badge.textContent = "Best Value";
+              badge.classList.add("bg-blue-600", "text-white");
+              badge.classList.remove("hidden");
+            } else if (
+              rec.value_rating &&
+              parseFloat(rec.value_rating) >= 4.5
+            ) {
+              badge.textContent = "Best Rated";
+              badge.classList.add("bg-green-500", "text-white");
+              badge.classList.remove("hidden");
+            }
+
+            // Set card content
+            card.querySelector(".card-title").textContent = `${rec.airline}`;
+            card.querySelector(".card-details").textContent = `${rec.class} • ${
+              rec.season || "Year-round"
+            }`;
+            card.querySelector(".card-price").textContent = rec.price;
+
+            // Add discount for first recommendation
+            if (index === 0) {
+              const originalPrice = parseInt(rec.price.replace("$", "")) * 1.2;
+              card.querySelector(
+                ".card-original-price"
+              ).textContent = `$${Math.round(originalPrice)}`;
+              card
+                .querySelector(".card-original-price")
+                .classList.remove("hidden");
+            }
+
+            // Set route information
+            card.querySelector(".card-route").textContent = rec.route;
+
+            // Set date (current date + random days)
+            const randomDays = Math.floor(Math.random() * 30) + 1;
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + randomDays);
+            const formattedDate = futureDate.toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            });
+            card.querySelector(".card-date").textContent = formattedDate;
+
+            // Set ratings
+            card.querySelector(".card-rating").textContent = rec.rating;
+            if (rec.value_rating) {
+              card.querySelector(
+                ".card-value-rating"
+              ).textContent = `Value: ${rec.value_rating}`;
+            }
+
+            // Set airline
+            card.querySelector(".card-airline").textContent = rec.airline;
+
+            // Add to container
+            recommendationsContainer.appendChild(card);
+          });
+
+          // Reset filter buttons
+          filterButtons[0].click();
+        }
+      });
+    </script>
+  </body>
+</html>
